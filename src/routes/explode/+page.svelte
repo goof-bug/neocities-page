@@ -46,8 +46,26 @@
 
 			gif.render();
 
-			const blob = await promise;
-			return URL.createObjectURL(blob);
+			return await promise;
+		}
+	});
+
+	let dataUrlPromise = $derived.by(async () => {
+		const gif = await gifPromise;
+		if (gif) {
+			const reader = new FileReader();
+			const { promise, resolve, reject } = Promise.withResolvers<string>();
+			reader.onload = () => {
+				if (!reader.result || typeof reader.result !== 'string') {
+					return reject(new Error('Bad result'));
+				}
+				resolve(reader.result as string);
+			};
+			reader.onerror = (error) => {
+				reject(error);
+			};
+			reader.readAsDataURL(gif);
+			return await promise;
 		}
 	});
 </script>
@@ -58,7 +76,7 @@
 
 	<canvas class="hidden" bind:this={canvas} width="498" height="460"></canvas>
 
-	{#await gifPromise}
+	{#await dataUrlPromise}
 		<p>Loading...</p>
 	{:then gif}
 		{#if !gif}
