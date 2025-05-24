@@ -15,11 +15,14 @@
 				throw new Error('No canvas context');
 			}
 
+			const workerRequest = await fetch(gifWorkerUrl);
+			const workerBlob = await workerRequest.blob();
+
 			const gif = new GIF({
 				width: 498,
 				height: 460,
 				debug: true,
-				workerScript: gifWorkerUrl.toString(),
+				workerScript: URL.createObjectURL(workerBlob),
 				quality: 1
 			});
 			for (const file of files) {
